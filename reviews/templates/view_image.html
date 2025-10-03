@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="text-center">Image Details</h2>
+    <img src="{{ url_for('static', filename='uploads/' + image_name) }}" class="img-fluid" alt="Uploaded Image">
+    <h5 class="mt-4">Rate This Image</h5>
+    <form method="post" action="#">
+        <div class="form-group">
+            <label for="rating">Rating (1-5)</label>
+            <input type="number" class="form-control" id="rating" name="rating" min="1" max="5" required>
+        </div>
+        <div class="form-group">
+            <label for="comment">Comment</label>
+            <textarea class="form-control" id="comment" name="comment" rows="3" required></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+
+    <h5 class="mt-4">Comments</h5>
+    <ul id="comments-list">
+        <!-- Placeholder for showing comments; functionality to be added -->
+    </ul>
+</div>
+{% endblock %}
