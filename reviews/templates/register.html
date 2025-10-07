@@ -3,10 +3,10 @@
 {% block title %}Login{% endblock %}
 
 {% block content %}
-    <h2 class="mt-5">Login</h2>
+    <h2 class="mt-5">Register</h2>
     <form class="mt-4">
         <div class="form-group">
-            <a href="/register">If you don't have an account yet, register here</a> <br>
+            <a href="/login">If you already have an account, login here</a> <br>
             <label for="username">Username</label>
             <input type="text" class="form-control" id="username" placeholder="Enter your username" required>
         </div>
@@ -14,6 +14,10 @@
             <label for="password">Password</label>
             <input type="password" class="form-control" id="password" placeholder="Enter your password" required>
         </div>
-        <button type="submit" class="btn btn-primary">Login</button>
+        <div class="form-group">
+            <label for="password">Repeat Password</label>
+            <input type="password" class="form-control" id="password" placeholder="Enter your password" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Register</button>
     </form>
 {% endblock %}

@@ -11,15 +11,19 @@ def home():
 def login():
     return render_template('login.html')
 
+@app.route('/register')
+def register():
+    return render_template('register.html')
+
 #@app.route('/test')
 #def test():
     # return app.send_static_file('test.html')
 #    return render_template('login.html')
 
-#@app.route('/view_image')
-#def test():
+@app.route('/view_image')
+def test():
     # return app.send_static_file('view_image.html')
-#    return render_template('view_image.html')
+    return render_template('view_image.html')
 
 def setup_routes(app):
     @app.route('/upload', methods=['GET', 'POST'])
@@ -34,7 +38,7 @@ def setup_routes(app):
                 uploaded_image = filename  # Save the filename to display later
                 # return redirect(url_for('view_image', image_id=unique_id))
                 return redirect(url_for('view_image', image_id=uploaded_image))
-        return render_template('upload.html')  # Template should be found correctly
+        return render_template('upload.html')
 
     @ app.route('/image/<image_id>')
     def view_image(image_id):
