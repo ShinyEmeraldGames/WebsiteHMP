@@ -31,13 +31,14 @@ def setup_routes(app):
         uploaded_image = None
         if request.method == 'POST':
             file = request.files['image']
+            print("Allowed File: ", allowed_file(file.filename))
             if file and allowed_file(file.filename):
                 unique_id = str(uuid.uuid4())
                 filename = f"{unique_id}_{file.filename}"
                 file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
                 uploaded_image = filename  # Save the filename to display later
-                # return redirect(url_for('view_image', image_id=unique_id))
-                return redirect(url_for('view_image', image_id=uploaded_image))
+                return redirect(url_for('view_image', image_id=unique_id, image_name = uploaded_image))
+                # return redirect(url_for('view_image', image_id=uploaded_image))
         return render_template('upload.html')
 
     @ app.route('/image/<image_id>')
