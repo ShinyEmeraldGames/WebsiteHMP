@@ -3,6 +3,7 @@ from reviews import app, db
 import os
 import uuid
 from sqlalchemy import text
+from sqlalchemy.exc import SQLAlchemyError
 
 @app.route('/')
 def home():
@@ -17,11 +18,11 @@ def login():
         print("Username: ", username)
         print("Password: ", password)
         
-        if username is None or isinstance(username,str) is False or len(username) <= 3:
+        if username is None or isinstance(username,str) is False or len(username) < 3:
             print("something wrong1")
             return render_template("login.html")
         
-        if password is None or isinstance(password,str) is False or len(password) <= 3:
+        if password is None or isinstance(password,str) is False or len(password) < 3:
             print("something wrong2")
             return render_template("login.html")
         
@@ -36,50 +37,59 @@ def login():
             return render_template("login.html")
     
         print("forwarding")
+        print("Login successfull")
         resp = redirect('register') # wo alles drinsteht aus der db
         return resp
     
     return render_template("login.html")
 
-@app.route('/register', method=['GET', 'POST'])
+@app.route('/register', methods=['GET', 'POST'])
 def register():
-    if request.method == "post":
+    if request.method == "POST":
+        email = request.form.get('email_address')
         username = request.form.get('Username')
         password = request.form.get('Password')
         password_repeat = request.form.get('Password Repeat')
         
+        print("Email: ", email)
         print("Username: ", username)
         print("Password: ", password)
         print("Password repeat: ", password_repeat)
         
         if username is None or isinstance(username,str) is False or len(username) <= 3:
             print("something wrong1")
-            return render_template("login.html")
+            return render_template("register.html")
         
         if password is None or isinstance(password,str) is False or len(password) <= 3:
             print("something wrong2")
-            return render_template("login.html")
+            return render_template("register.html")
         
         if password_repeat is None or isinstance(password_repeat,str) is False or len(password_repeat) <= 3:
             print("something wrong3")
-            return render_template("login.html")
+            return render_template("register.html")
+        
+        if email is None or isinstance(email, str) is False:
+            print("Something wrong4")
+            return render_template("register.html")
         
         if password != password_repeat:
             print("password must match repeated password")
-            return render_template("login.html")
+            return render_template("register.html")
         
-        qstmt = f"insert into users where username='{username}' and password='{password}'" # query statement
+        qstmt = f"INSERT INTO users (username, password, email_address) VALUES ('{username}', '{password}', '{email}');" # query statement
         print(qstmt)
-        result = db.session.execute(text(qstmt))
-        print("here")
-        user = result.fetchall()
-    
-        if not user:
-            print("something wrong3")
-            return render_template("login.html")
+        db.session.execute(text(qstmt))
+        try:
+            db.session.commit()
+            print("commit")
+        except SQLAlchemyError as e:
+            db.session.rollback()
+            print("rollback")
+            return render_template("register.html")
     
         print("forwarding")
-        resp = redirect('login') # wo alles drinsteht aus der db
+        print("Register successfull")
+        resp = redirect('register') # wo alles drinsteht aus der db
         return resp
         
     return render_template('register.html')
