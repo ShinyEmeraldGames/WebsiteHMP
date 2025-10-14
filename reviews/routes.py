@@ -1,18 +1,87 @@
 from flask import Flask, render_template, request, redirect, url_for
-from reviews import app
+from reviews import app, db
 import os
 import uuid
+from sqlalchemy import text
 
 @app.route('/')
 def home():
     return render_template('home.html')
 
-@app.route('/login')
+@app.route('/login', methods=['GET', 'POST'])
 def login():
-    return render_template('login.html')
+    if request.method == 'POST':
+        username = request.form.get('Username')
+        password = request.form.get('Password')
+        
+        print("Username: ", username)
+        print("Password: ", password)
+        
+        if username is None or isinstance(username,str) is False or len(username) <= 3:
+            print("something wrong1")
+            return render_template("login.html")
+        
+        if password is None or isinstance(password,str) is False or len(password) <= 3:
+            print("something wrong2")
+            return render_template("login.html")
+        
+        qstmt = f"select * from users where username='{username}' and password='{password}'" # query statement
+        print(qstmt)
+        result = db.session.execute(text(qstmt))
+        print("here")
+        user = result.fetchall()
+    
+        if not user:
+            print("something wrong3")
+            return render_template("login.html")
+    
+        print("forwarding")
+        resp = redirect('register') # wo alles drinsteht aus der db
+        return resp
+    
+    return render_template("login.html")
 
-@app.route('/register')
+@app.route('/register', method=['GET', 'POST'])
 def register():
+    if request.method == "post":
+        username = request.form.get('Username')
+        password = request.form.get('Password')
+        password_repeat = request.form.get('Password Repeat')
+        
+        print("Username: ", username)
+        print("Password: ", password)
+        print("Password repeat: ", password_repeat)
+        
+        if username is None or isinstance(username,str) is False or len(username) <= 3:
+            print("something wrong1")
+            return render_template("login.html")
+        
+        if password is None or isinstance(password,str) is False or len(password) <= 3:
+            print("something wrong2")
+            return render_template("login.html")
+        
+        if password_repeat is None or isinstance(password_repeat,str) is False or len(password_repeat) <= 3:
+            print("something wrong3")
+            return render_template("login.html")
+        
+        if password != password_repeat:
+            print("password must match repeated password")
+            return render_template("login.html")
+        
+        qstmt = f"insert into users where username='{username}' and password='{password}'" # query statement
+        print(qstmt)
+        result = db.session.execute(text(qstmt))
+        print("here")
+        user = result.fetchall()
+    
+        if not user:
+            print("something wrong3")
+            return render_template("login.html")
+    
+        print("forwarding")
+        resp = redirect('login') # wo alles drinsteht aus der db
+        return resp
+        
     return render_template('register.html')
 
 #@app.route('/test')

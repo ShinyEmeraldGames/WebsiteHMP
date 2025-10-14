@@ -3,8 +3,10 @@
 {% block title %}ImgRating{% endblock %}
 
 {% block content %}
-    <p>Welcome to the Home Page!</p>
+    <h1>Welcome to ImgRating</h1> <br>
+    <p>The place where you can upload pictures and rate pictures by other users!</p> <br>
 
-    <h5>Image of the day</h5>
+    <h5>Image of the day</h5> <br>
         <img src="{{ url_for('static', filename='uploads/cat.jpg') }}" class="img-fluid" alt="Image of the day">
+    <br>
 {% endblock %}
