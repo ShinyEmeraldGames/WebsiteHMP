@@ -7,7 +7,8 @@ from sqlalchemy.exc import SQLAlchemyError
 
 @app.route('/')
 def home():
-    return render_template('home.html')
+    cookie = request.cookies.get('name')
+    return render_template('home.html', cookie=cookie)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -34,14 +35,15 @@ def login():
     
         if not user:
             print("something wrong3")
-            return render_template("login.html")
+            return render_template("login.html", cookie=None)
     
         print("forwarding")
         print("Login successfull")
-        resp = redirect('register') # wo alles drinsteht aus der db
+        resp = redirect('/') # wo alles drinsteht aus der db
+        resp.set_cookie('name', username)
         return resp
     
-    return render_template("login.html")
+    return render_template("login.html", cookie=None)
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -92,7 +94,7 @@ def register():
         resp = redirect('register') # wo alles drinsteht aus der db
         return resp
         
-    return render_template('register.html')
+    return render_template('register.html', cookie=None)
 
 #@app.route('/test')
 #def test():
@@ -101,8 +103,17 @@ def register():
 
 @app.route('/view_image')
 def test():
+    # cookie = request.cookies.get('name')
+    # if not request.cookies.get('name'):
+    # return redirect(url_for('login_page'))
     # return app.send_static_file('view_image.html')
-    return render_template('view_image.html')
+    return render_template('view_image.html', cookie=cookie)
+
+@app.route('/logout')
+def logout():
+    resp = redirect('/') # wo alles drinsteht aus der db
+    resp.set_cookie('name', '', expires=0)
+    return resp
 
 def setup_routes(app):
     @app.route('/upload', methods=['GET', 'POST'])
@@ -137,7 +148,6 @@ def setup_routes(app):
             return render_template('view_image.html', image_name=image_name)
 
         return "Image not found", 404
-
 
 def allowed_file(filename):
     allowed_extensions = {'png', 'jpg', 'jpeg', 'gif'}
