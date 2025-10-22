@@ -12,10 +12,9 @@
         <div class="collapse navbar-collapse">
             <ul class="navbar-nav mr-auto"></ul>
             {% if cookie %}
-                <a class="btn btn-primary" href="/logout">Logout</a>
-                <br>
-                <a class="btn btn-primary" href="/feed">Image-Feed</a>
-                <a class="btn btn-primary" href="/upload">Upload</a>
+                <a class="btn btn-primary me-2" href="{{ url_for('feed') }}">Image Feed</a>
+                <a class="btn btn-primary me-2" href="{{ url_for('upload') }}">Upload</a>
+                <a class="btn btn-primary" href="{{ url_for('logout') }}">Logout</a>
             {% else %}
                 <a class="btn btn-primary" href="/login">Login</a>
             {% endif %}

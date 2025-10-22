@@ -234,7 +234,19 @@ def setup_routes(app):
 
 @app.route('/feed')
 def feed():
-    pass
+    cookie = request.cookies.get('name')
+    # Query to get all images and their average ratings
+    images_query = """SELECT images.id, images.image_url, AVG(comments.rating) AS average_rating
+                      FROM images
+                      LEFT JOIN comments ON images.id = comments.image_id
+                      GROUP BY images.id;"""
+    
+    images_result = db.session.execute(text(images_query))
+
+    # Prepare a list of images with their ratings
+    images_with_ratings = [{'id': row[0], 'url': row[1], 'average_rating': row[2]} for row in images_result]
+
+    return render_template('feed.html', images=images_with_ratings, cookie=cookie)
 
 def allowed_file(filename):
     allowed_extensions = {'png', 'jpg', 'jpeg', 'gif'}
