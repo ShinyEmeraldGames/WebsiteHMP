@@ -2,6 +2,12 @@
 
 {% block content %}
 <div class="container mt-4">
+    {% if cookie %}
+    <p> Hello {{cookie}}, you are logged in <p>
+    {% else %}
+    <p> You are not logged in <p>
+    {% endif %}
+    
     <h2 class="text-center">Upload Image</h2>
     <form method="post" enctype="multipart/form-data">
         <div class="form-group">

@@ -19,7 +19,16 @@
 
     <h5 class="mt-4">Comments</h5>
     <ul id="comments-list">
-        <!-- Placeholder for showing comments; functionality to be added -->
+        {% for c in comments %}
+            <li>
+                <strong>Rating: {{ c.rating }}</strong><br>
+                {{ c.comment }}
+            </li>
+        {% else %}
+            <li>No comments yet.</li>
+        {% endfor %}
     </ul>
+
+
 </div>
 {% endblock %}
