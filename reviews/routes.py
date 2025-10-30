@@ -16,28 +16,34 @@ def login():
     if request.method == 'POST':
         username = request.form.get('Username')
         password = request.form.get('Password')
+        message = ""
+        message_category = ""
         
         print("Username: ", username)
         print("Password: ", password)
         
         if username is None or isinstance(username,str) is False or len(username) < 3:
-            print("something wrong1")
-            return render_template("login.html")
+            message = "Invalid username format"
+            message_category = "danger"
+            return render_template("login.html", message=message, category=message_category)
         
         if password is None or isinstance(password,str) is False or len(password) < 3:
             print("something wrong2")
-            return render_template("login.html")
+            message = "Invalid password format"
+            message_category = "danger"
+            return render_template("login.html", message=message, category=message_category)
         
-        qstmt = f"select * from users where username='{username}' and password='{password}'" # query statement
+        qstmt = f"select * from users where username='{username}' and password='{password}'"
         print(qstmt)
         result = db.session.execute(text(qstmt))
-        print("here")
         user = result.fetchall()
     
         if not user:
             print("something wrong3")
-            return render_template("login.html", cookie=None)
-    
+            message=f"Username or password wrong."
+            message_category="danger"
+            return render_template("login.html", message=message, category=message_category)
+        
         print("forwarding")
         print("Login successfull")
         resp = redirect('/')
@@ -53,6 +59,8 @@ def register():
         username = request.form.get('Username')
         password = request.form.get('Password')
         password_repeat = request.form.get('Password Repeat')
+        message = ""
+        message_category = "" 
         
         print("Email: ", email)
         print("Username: ", username)
@@ -60,24 +68,30 @@ def register():
         print("Password repeat: ", password_repeat)
         
         if username is None or isinstance(username,str) is False or len(username) <= 3:
-            print("something wrong1")
-            return render_template("register.html")
+            message = "Invalid username format"
+            message_category = "danger"
+            return render_template("register.html", message=message, category=message_category)
         
         if password is None or isinstance(password,str) is False or len(password) <= 3:
-            print("something wrong2")
-            return render_template("register.html")
+            message = "Invalid password format"
+            message_category = "danger"
+            return render_template("register.html", message=message, category=message_category)
         
         if password_repeat is None or isinstance(password_repeat,str) is False or len(password_repeat) <= 3:
-            print("something wrong3")
-            return render_template("register.html")
+            message = "Invalid password format"
+            message_category = "danger"
+            return render_template("register.html", message=message, category=message_category)
         
-        if email is None or isinstance(email, str) is False:
+        if email is None or isinstance(email, str) is False and not email_exists_in_db(email):
             print("Something wrong4")
-            return render_template("register.html")
+            message = "Invalid email format"
+            message_category = "danger"
+            return render_template("register.html", message=message, category=message_category)
         
         if password != password_repeat:
-            print("password must match repeated password")
-            return render_template("register.html")
+            message = "Passwords do not match"
+            message_category = "danger"
+            return render_template("register.html", message=message, category=message_category)
         
         qstmt = f"INSERT INTO users (username, password, email_address) VALUES ('{username}', '{password}', '{email}');" # query statement
         print(qstmt)
@@ -164,7 +178,6 @@ def setup_routes(app):
         cookie = request.cookies.get('name')
         uploaded_images = os.listdir(app.config['UPLOAD_FOLDER'])
         if request.method == 'POST':
-            # Retrieve form data
             rating = request.form['rating']
             comment = request.form['comment']
             
@@ -175,11 +188,11 @@ def setup_routes(app):
             
             user_id = None
             for row in result:
-                user_id = row[0]  # Get the first column value from the row
+                user_id = row[0]
 
             # Make sure user_id is not None and convert it to an integer
             if user_id is not None:
-                user_id = int(user_id)  # Convert to integer only if valid
+                user_id = int(user_id)
             else:
                 raise ValueError("No user found")
             
@@ -188,7 +201,6 @@ def setup_routes(app):
             print(qstmt_username)
             username = db.session.execute(text(qstmt_username))
             
-            # Append comment and rating to the list
             new_comment = Comments(
                 image_id = image_id,
                 user_id = user_id,
@@ -220,37 +232,46 @@ def setup_routes(app):
 
         return "Image not found", 404
 
-    '''@app.route('/image_details/<image_name>', methods=['GET', 'POST'])
-    def image_details(image_name):
-        if request.method == 'POST':
-            # Retrieve form data
-            rating = request.form['rating']
-            comment = request.form['comment']
-            # Append comment and rating to the list
-            comments.append({'rating': rating, 'comment': comment})
-            return redirect(url_for('image_details', image_name=image_name))  # Redirect to clear form
-
-        return render_template('image_details.html', image_name=image_name, comments=comments)'''
-
-@app.route('/feed')
+@app.route('/feed', methods=['POST', 'GET'])
 def feed():
     cookie = request.cookies.get('name')
-    # Query to get all images and their average ratings
-    images_query = """SELECT images.id, images.image_url, AVG(comments.rating) AS average_rating
-                      FROM images
-                      LEFT JOIN comments ON images.id = comments.image_id
-                      GROUP BY images.id;"""
+    message = ""
+    message_category = ""
     
-    images_result = db.session.execute(text(images_query))
+    if request.method == 'GET':
+        username = request.args.get('Search_Button')
 
-    # Prepare a list of images with their ratings
-    images_with_ratings = [{'id': row[0], 'url': row[1], 'average_rating': row[2]} for row in images_result]
+        if username is not None:
+            images_query = f"""
+                SELECT i.id, i.image_url, i.upload_date, i.rating
+                FROM images i
+                JOIN users u ON i.user_id = u.id
+                WHERE u.username = '{username}';
+            """
+            
+            images_result = db.session.execute(text(images_query))
+            images = images_result.fetchall()
+            
+            if images:
+                message = f"Search successful: {images}"
+                message_category = "successful"
 
-    return render_template('feed.html', images=images_with_ratings, cookie=cookie)
+            images_by_user = [
+                {'id': row[0], 'url': row[1], 'upload_date': row[2], 'average_rating': row[3]} 
+                for row in images
+            ]
+            
+            return render_template('feed.html', images=images, message=message, message_category=message_category, cookie=cookie)
+
+    return render_template('feed.html', message=message, message_category=message_category, cookie=None)
 
 def allowed_file(filename):
     allowed_extensions = {'png', 'jpg', 'jpeg', 'gif'}
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in allowed_extensions
+
+def email_exists_in_db(email):
+    result = db.execute("SELECT COUNT(*) FROM users WHERE email_address = ?", (email,)).fetchone()
+    return result[0] > 0
 
 if __name__ == "__main__":
     app.run()

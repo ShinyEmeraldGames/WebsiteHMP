@@ -4,11 +4,29 @@
 
 {% block content %}
 <ul>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <form method="GET" action="/feed" class="search-container">
+                    <input type="text" name="Search_Button" class="form-control search-input" placeholder="Search for ">
+                    <button class="btn btn-primary btn-spacing" type="submit">Search</button>
+
+                    {% if message %}
+                        <div class="alert alert-{{ category }}" role="alert">
+                            {{ message }}
+                        </div>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+    </div>
+
     {% for image in images %}
         <li>
             <a href="{{ url_for('view_image', image_id=image.id) }}">
                 <img src="{{ image.url }}" alt="Image ID {{ image.id }}" style="max-width: 150px;"/>
             </a>
+            <!-- This is a comment 
             <div>
                 Average Rating: 
                 {% if image.average_rating is not none %}
@@ -16,10 +34,8 @@
                 {% else %}
                     No ratings yet
                 {% endif %}
-            </div>
+            </div> -->
         </li>
-    {% else %}
-        <li>No images found.</li>
     {% endfor %}
 </ul>
 
