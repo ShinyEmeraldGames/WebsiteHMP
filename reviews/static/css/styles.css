@@ -1,3 +1,60 @@
 .btn-spacing {
     margin-right: 10px;
 }
+
+.search-container {
+    position: relative;
+}
+
+.search-input {
+    height: 50px;
+    border-radius: 30px;
+    padding-left: 35px;
+    border: none;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.search-icon {
+    position: absolute;
+    top: 50%;
+    left: 15px;
+    transform: translateY(-50%);
+    color: #888;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 20px;
+}
+h1 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+.message {
+    color: green;
+    text-align: center;
+    margin: 20px 0;
+}
+.image-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+.image-table th, .image-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: center;
+}
+.image-table th {
+    background-color: #4CAF50; /* Green header */
+    color: white;
+}
+.image-table tr:nth-child(even) {
+    background-color: #f2f2f2; /* Zebra stripes */
+}
+.image-table img {
+    max-width: 150px; /* Fixed size for images */
+    border-radius: 5px;
+}

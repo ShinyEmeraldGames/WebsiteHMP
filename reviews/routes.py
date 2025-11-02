@@ -5,6 +5,7 @@ import os
 import uuid
 from sqlalchemy import text, Column, DateTime
 from sqlalchemy.exc import SQLAlchemyError
+import re
 
 @app.route('/')
 def home():
@@ -233,6 +234,8 @@ def setup_routes(app):
         return "Image not found", 404
 
 @app.route('/feed', methods=['POST', 'GET'])
+# ' OR '1'='1' UNION SELECT * FROM users UNION SELECT id, image_id, comment_text, comment_date from comments -- 
+# 'OR 1=1 -- 
 def feed():
     cookie = request.cookies.get('name')
     message = ""
@@ -253,14 +256,19 @@ def feed():
             images = images_result.fetchall()
             
             if images:
-                message = f"Search successful: {images}"
+                message = f"Search successful: {len(images)} result(s) found."
                 message_category = "successful"
-
-            images_by_user = [
-                {'id': row[0], 'url': row[1], 'upload_date': row[2], 'average_rating': row[3]} 
-                for row in images
-            ]
             
+                images_by_user = [
+                    {'id': row[0], 'url': row[1], 'upload_date': row[2], 'average_rating': row[3]} 
+                    for row in images
+                ]
+            
+            if contains_sql_injection(username):
+                message = f"Executed SQL Injection: {images}"
+                message_category = "danger"
+                return render_template('feed.html', images=images, message=message, message_category=message_category, cookie=cookie)
+
             return render_template('feed.html', images=images, message=message, message_category=message_category, cookie=cookie)
 
     return render_template('feed.html', message=message, message_category=message_category, cookie=None)
@@ -272,6 +280,15 @@ def allowed_file(filename):
 def email_exists_in_db(email):
     result = db.execute("SELECT COUNT(*) FROM users WHERE email_address = ?", (email,)).fetchone()
     return result[0] > 0
+
+def contains_sql_injection(username):
+    # A simple regex to match patterns likely indicating an SQL injection attempt
+    patterns = [
+        r"(\bUNION\b|\bSELECT\b|\bINSERT\b|\bDELETE\b|\bUPDATE\b|--|#|\bDROP\b|\bTABLE\b)",
+        r"(\s*;.*$)"  # Matches patterns like '; --'
+    ]
+    combined_pattern = '|'.join(patterns)
+    return re.search(combined_pattern, username, re.IGNORECASE)
 
 if __name__ == "__main__":
     app.run()

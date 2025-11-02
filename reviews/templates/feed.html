@@ -16,6 +16,12 @@
     </div>
 
     <h1>Image Feed</h1>
+
+    {% if message %}
+        <div class="alert alert-{{ message_category }}">
+            {{ message }}
+        </div>
+    {% endif %}
     
     <table class="image-table">
         <thead>
