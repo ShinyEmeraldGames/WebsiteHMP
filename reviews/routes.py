@@ -34,9 +34,9 @@ def login():
             message_category = "danger"
             return render_template("login.html", message=message, category=message_category)
         
-        qstmt = f"select * from users where username='{username}' and password='{password}'"
+        qstmt = f"select * from users where username=:username and password=:password"
         print(qstmt)
-        result = db.session.execute(text(qstmt))
+        result = db.session.execute(qstmt, {'username': username, 'password': password})
         user = result.fetchall()
     
         if not user:
@@ -94,9 +94,10 @@ def register():
             message_category = "danger"
             return render_template("register.html", message=message, category=message_category)
         
-        qstmt = f"INSERT INTO users (username, password, email_address) VALUES ('{username}', '{password}', '{email}');" # query statement
+        qstmt = text("INSERT INTO users (username, password, email_address) VALUES (:username, :password, :email_address)")
         print(qstmt)
-        db.session.execute(text(qstmt))
+        db.session.execute(qstmt, {'username': username, 'password': password, 'email_address': email})
+        
         try:
             db.session.commit()
             print("commit")
@@ -142,9 +143,12 @@ def setup_routes(app):
                 uploaded_image = filename  # Save the filename to display later
                 
                 # get user_id based on cookie
-                qstmt_userid = f"select id from users where username='{cookie}' LIMIT 1;"
-                result = db.session.execute(text(qstmt_userid))
-                print(result)
+                qstmt_userid = text("SELECT id FROM users WHERE username=:username LIMIT 1;")
+                result = db.session.execute(qstmt_userid, {'username': cookie})
+
+                # Fetch the result
+                user_id = result.fetchone()  # Use fetchone() since LIMIT 1 is specified
+                print(user_id)
                 
                 user_id = None
                 for row in result:
@@ -157,9 +161,10 @@ def setup_routes(app):
                     raise ValueError("No user found")
                 
                 print("Cookie:", cookie)
-                qstmt_username = f"select username from users where id='{user_id}';"
+                qstmt_username = text("SELECT username FROM users WHERE id=:user_id;")
                 print(qstmt_username)
-                username = db.session.execute(text(qstmt_username))
+                result = db.session.execute(qstmt_username, {'user_id': user_id})
+                
                 new_image = Images(
                     user_id=user_id,
                     image_url=filename,
@@ -183,8 +188,8 @@ def setup_routes(app):
             comment = request.form['comment']
             
             # get user_id based on cookie
-            qstmt_userid = f"select id from users where username='{cookie}' LIMIT 1;"
-            result = db.session.execute(text(qstmt_userid))
+            qstmt_userid = text("SELECT id FROM users WHERE username=:username LIMIT 1;")
+            result = db.session.execute(qstmt_userid, {'username': cookie})
             print(result)
             
             user_id = None
@@ -198,9 +203,9 @@ def setup_routes(app):
                 raise ValueError("No user found")
             
             print("Cookie:", cookie)
-            qstmt_username = f"select username from users where id='{user_id}';"
+            qstmt_username = f"select username from users where id=:id;"
             print(qstmt_username)
-            username = db.session.execute(text(qstmt_username))
+            username = db.session.execute(qstmt_username, {'id': user_id})
             
             new_comment = Comments(
                 image_id = image_id,
@@ -223,8 +228,8 @@ def setup_routes(app):
 
         if image_name:
             # Fetch comments for the image
-            comments_query = f"SELECT rating, comment_text FROM comments WHERE image_id='{image_id}';"
-            comments_result = db.session.execute(text(comments_query))
+            comments_query = f"SELECT rating, comment_text FROM comments WHERE image_id=:image_id;"
+            comments_result = db.session.execute(comments_query, {'image_id': image_id})
             
             # Extract comments
             comments = [{'rating': row[0], 'comment': row[1]} for row in comments_result]
@@ -249,10 +254,10 @@ def feed():
                 SELECT i.id, i.image_url, i.upload_date, i.rating
                 FROM images i
                 JOIN users u ON i.user_id = u.id
-                WHERE u.username = '{username}';
+                WHERE u.username =: username;
             """
             
-            images_result = db.session.execute(text(images_query))
+            images_result = db.session.execute(images_query, {'username': username})
             images = images_result.fetchall()
             
             if images:
