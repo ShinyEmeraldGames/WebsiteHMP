@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, make_response, jsonify
 from reviews import app, db, Images, Users, Comments
 from datetime import datetime, timezone
 import os
@@ -17,40 +17,32 @@ def login():
     if request.method == 'POST':
         username = request.form.get('Username')
         password = request.form.get('Password')
-        message = ""
-        message_category = ""
         
-        print("Username: ", username)
-        print("Password: ", password)
-        
-        if username is None or isinstance(username,str) is False or len(username) < 3:
-            message = "Invalid username format"
-            message_category = "danger"
-            return render_template("login.html", message=message, category=message_category)
-        
-        if password is None or isinstance(password,str) is False or len(password) < 3:
-            print("something wrong2")
-            message = "Invalid password format"
-            message_category = "danger"
-            return render_template("login.html", message=message, category=message_category)
-        
-        qstmt = f"select * from users where username=:username and password=:password"
-        print(qstmt)
-        result = db.session.execute(qstmt, {'username': username, 'password': password})
-        user = result.fetchall()
-    
-        if not user:
-            print("something wrong3")
-            message=f"Username or password wrong."
-            message_category="danger"
-            return render_template("login.html", message=message, category=message_category)
-        
-        print("forwarding")
-        print("Login successfull")
-        resp = redirect('/')
+        # Validate input formats
+        if not username or not isinstance(username, str) or len(username) < 3:
+            return make_response(jsonify(message="Invalid username format"), 400)
+
+        if not password or not isinstance(password, str) or len(password) < 3:
+            return make_response(jsonify(message="Invalid password format"), 400)
+
+        # Query the database for the user
+        qstmt = text("SELECT * FROM users WHERE username=:username")
+        result = db.session.execute(qstmt, {'username': username})
+        user = result.fetchone()
+
+        # User not found
+        if user is None:
+            return make_response(jsonify(message="Username not found."), 401)
+
+        # Check correct password
+        if user.password != password:
+            return make_response(jsonify(message="Incorrect password."), 401)
+
+        # Successful login, redirect user
+        resp = make_response(redirect('/'))
         resp.set_cookie('name', username)
-        return resp
-    
+        return resp  # This will return a 302 status code by default.
+
     return render_template("login.html", cookie=None)
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -203,7 +195,7 @@ def setup_routes(app):
                 raise ValueError("No user found")
             
             print("Cookie:", cookie)
-            qstmt_username = f"select username from users where id=:id;"
+            qstmt_username = text("select username from users where id=:id;")
             print(qstmt_username)
             username = db.session.execute(qstmt_username, {'id': user_id})
             
@@ -228,7 +220,7 @@ def setup_routes(app):
 
         if image_name:
             # Fetch comments for the image
-            comments_query = f"SELECT rating, comment_text FROM comments WHERE image_id=:image_id;"
+            comments_query = text("SELECT rating, comment_text FROM comments WHERE image_id=:image_id;")
             comments_result = db.session.execute(comments_query, {'image_id': image_id})
             
             # Extract comments
@@ -250,13 +242,14 @@ def feed():
         username = request.args.get('Search_Button')
 
         if username is not None:
-            images_query = f"""
+            images_query = text("""
                 SELECT i.id, i.image_url, i.upload_date, i.rating
                 FROM images i
                 JOIN users u ON i.user_id = u.id
-                WHERE u.username =: username;
-            """
-            
+                WHERE u.username = :username;
+            """)
+
+            # Execute the query with a dictionary for parameters
             images_result = db.session.execute(images_query, {'username': username})
             images = images_result.fetchall()
             
@@ -270,7 +263,7 @@ def feed():
                 ]
             
             if contains_sql_injection(username):
-                message = f"Executed SQL Injection: {images}"
+                message = f"Detected SQL-Injection Attempt: {images}"
                 message_category = "danger"
                 return render_template('feed.html', images=images, message=message, message_category=message_category, cookie=cookie)
 
