@@ -20,10 +20,14 @@ def login():
         
         # Validate input formats
         if not username or not isinstance(username, str) or len(username) < 3:
-            return make_response(jsonify(message="Invalid username format"), 400)
+            message = "Error: Invalid username format, 400"
+            message_category = "danger"
+            return render_template("login.html", message=message, category=message_category)
 
         if not password or not isinstance(password, str) or len(password) < 3:
-            return make_response(jsonify(message="Invalid password format"), 400)
+            message = "Error: Invalid password format, 400"
+            message_category = "danger"
+            return render_template("login.html", message=message, category=message_category)
 
         # Query the database for the user
         qstmt = text("SELECT * FROM users WHERE username=:username")
@@ -32,11 +36,15 @@ def login():
 
         # User not found
         if user is None:
-            return make_response(jsonify(message="Username not found."), 401)
+            message = "Error: User not found, 401"
+            message_category = "danger"
+            return render_template("login.html", message=message, category=message_category)
 
         # Check correct password
         if user.password != password:
-            return make_response(jsonify(message="Incorrect password."), 401)
+            message = "Error: Invalid password, 401"
+            message_category = "danger"
+            return render_template("login.html", message=message, category=message_category)
 
         # Successful login, redirect user
         resp = make_response(redirect('/'))
