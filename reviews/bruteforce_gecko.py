@@ -12,7 +12,8 @@ driver.get(website)
 
 title = ""
 
-passwords = ["pass", "Derk", "123456", "654321", "1234", "sdhkdsf"]
+with open("passwords.txt", "r") as file:
+    passwords = [line.strip() for line in file.readlines()]
 
 wait = WebDriverWait(driver, 10)
 
@@ -26,7 +27,7 @@ for passw in passwords:
     assert(len(res) == 2)
     
     res[0].clear()
-    res[0].send_keys("Derk")
+    res[0].send_keys("1234")
     res[1].clear()
     res[1].send_keys(passw)
     
