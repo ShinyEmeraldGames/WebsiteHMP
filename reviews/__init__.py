@@ -1,9 +1,19 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 from os.path import join, dirname, realpath
 from datetime import datetime, timezone
 
 app = Flask(__name__, static_folder='static', template_folder='templates')
+
+# Set up rate limiting – 3 requests per minute for all routes
+limiter = Limiter(
+    get_remote_address,
+    app=app,
+    default_limits=["3 per minute"]
+)
+
 app.config['UPLOAD_FOLDER'] = join(dirname(realpath(__file__)), 'static/uploads/')
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # Limit upload size to 16 MB
 
