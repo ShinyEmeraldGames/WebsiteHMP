@@ -22,7 +22,7 @@
         {% for c in comments %}
             <li>
                 <strong>Rating: {{ c.rating }}</strong><br>
-                {{ c.comment }}
+                {{ c.comment | safe }} <!-- safe makes sure the comments are not being html escaped lol -->
             </li>
         {% else %}
             <li>No comments yet.</li>
