@@ -11,7 +11,7 @@ app = Flask(__name__, static_folder='static', template_folder='templates')
 limiter = Limiter(
     get_remote_address,
     app=app,
-    default_limits=["3 per minute"]
+    default_limits=["60 per minute"]
 )
 
 app.config['UPLOAD_FOLDER'] = join(dirname(realpath(__file__)), 'static/uploads/')
