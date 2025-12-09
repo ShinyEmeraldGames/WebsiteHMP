@@ -147,12 +147,13 @@ def setup_routes(app):
                 result = db.session.execute(qstmt_userid, {'username': cookie})
 
                 # Fetch the result
-                user_id = result.fetchone()  # Use fetchone() since LIMIT 1 is specified
-                print(user_id)
-                
-                user_id = None
-                for row in result:
-                    user_id = row[0]  # Get the first column value from the row
+                user_row = result.fetchone()  # Use fetchone() to get the first row
+
+                if user_row is None:
+                    raise ValueError("No user found")  # Handle the case where no user is returned
+
+                user_id = user_row[0]  # Get the first column value from the row
+                user_id = int(user_id)  # Convert to integer
 
                 # Make sure user_id is not None and convert it to an integer
                 if user_id is not None:

@@ -20,7 +20,7 @@ app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # Limit upload size to 16 M
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://dbuser:Heute0000@127.0.0.1/ImgWebsite'
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-# app.config['SECRET_KEY'] = 'sh83wzfahaskfdh286zssdsfm'
+app.config['SECRET_KEY'] = 'iamasecretkey'
 
 db = SQLAlchemy(app)
 
