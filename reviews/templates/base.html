@@ -12,7 +12,7 @@
         <a class="navbar-brand" href="/">ImgRating</a>
         <div class="collapse navbar-collapse">
             <ul class="navbar-nav mr-auto"></ul>
-            {% if cookie %}
+            {% if session['username'] %}
                 <a class="btn btn-primary btn-spacing" href="{{ url_for('feed') }}">Image Feed</a>
                 <a class="btn btn-primary btn-spacing" href="{{ url_for('upload') }}">Upload</a>
                 <a class="btn btn-primary btn-spacing" href="{{ url_for('logout') }}">Logout</a>

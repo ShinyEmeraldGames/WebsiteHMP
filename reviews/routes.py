@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, make_response, jsonify
+from flask import Flask, render_template, request, redirect, url_for, make_response, jsonify, session
 from reviews import app, db, Images, Users, Comments
 from datetime import datetime, timezone
 import os
@@ -9,8 +9,12 @@ import re
 
 @app.route('/')
 def home():
-    cookie = request.cookies.get('name')
-    return render_template('home.html', cookie=cookie)
+    # cookie = request.cookies.get('name')
+    username = session.get('username')
+    print("Session: ", session)
+    session_id = request.cookies.get('session') #retrieve session cookie
+    print("Session ID", {session_id})
+    return render_template('home.html', username=username)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -48,7 +52,8 @@ def login():
 
         # Successful login, redirect user
         resp = make_response(redirect('/'))
-        resp.set_cookie('name', username)
+        # resp.set_cookie('name', username)
+        session['username'] = username
         return resp  # This will return a 302 status code by default.
 
     return render_template("login.html", cookie=None)
@@ -123,13 +128,16 @@ def test():
 @app.route('/logout')
 def logout():
     resp = redirect('/') # wo alles drinsteht aus der db
-    resp.set_cookie('name', '', expires=0)
+    # resp.set_cookie('name', '', expires=0)
+    session.clear()
     return resp
 
 def setup_routes(app):
     @app.route('/upload', methods=['GET', 'POST'])
     def upload():
-        cookie = request.cookies.get('name')
+        if 'username' not in session:
+            return redirect(url_for('upload'))
+        cookie = session['username'] #request.cookies.get('name')
         if not request.cookies.get('name'):
             return redirect(url_for('upload'), cookie=None)
         uploaded_image = None
@@ -182,7 +190,10 @@ def setup_routes(app):
 
     @ app.route('/image/<image_id>', methods=['GET', 'POST'])
     def view_image(image_id):
-        cookie = request.cookies.get('name')
+        if 'username' not in session:
+            return redirect(url_for('view_image'))
+        cookie = session['username']
+        # cookie = request.cookies.get('name')
         uploaded_images = os.listdir(app.config['UPLOAD_FOLDER'])
         if request.method == 'POST':
             rating = request.form['rating']

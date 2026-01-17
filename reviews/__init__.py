@@ -1,7 +1,8 @@
-from flask import Flask
+from flask import Flask, session
 from flask_sqlalchemy import SQLAlchemy
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
+# from flask_session import Session
 from os.path import join, dirname, realpath
 from datetime import datetime, timezone
 
@@ -20,9 +21,11 @@ app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # Limit upload size to 16 M
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://dbuser:Heute0000@127.0.0.1/ImgWebsite'
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SECRET_KEY'] = 'iamasecretkey'
+app.config['SESSION_TYPE'] = 'filesystem'
+app.config['SECRET_KEY'] = 'efg'
 
 db = SQLAlchemy(app)
+# Session(app)
 
 class Images(db.Model):
     __tablename__ = 'images'

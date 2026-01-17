@@ -2,8 +2,8 @@
 
 {% block content %}
 <div class="container mt-4">
-    {% if cookie %}
-    <p> Hello {{cookie}}, you are logged in <p>
+    {% if session['username'] %}
+    <p> Hello {{session['username']}}, you are logged in <p>
     {% else %}
     <p> You are not logged in <p>
     {% endif %}
